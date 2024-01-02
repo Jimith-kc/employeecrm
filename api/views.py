@@ -16,7 +16,17 @@ class EmployeeModelViewSetView(viewsets.ModelViewSet):
     model=Employees
     queryset=Employees.objects.all()
 
-#url mention  lh:8000/api/v2/employees/departments/
+ #http://127.0.0.1:8000/api/v2/employees/
+    def list(self,request,*args,**kwargs):
+        qs=Employees.objects.all()
+        if "department" in request.query_params:
+            value=request.query_params.get("department")
+            qs=qs.filter(department=value)
+        serializer=EmployeeSerializer(qs,many=True)
+        return Response(data=serializer.data)
+
+        
+
 #method   method=put or get or post or delete
 
 #for filter by departments this custom 
@@ -25,41 +35,3 @@ class EmployeeModelViewSetView(viewsets.ModelViewSet):
     def departments(self,request,*args,**kwargs):
         data=Employees.objects.all().values_list("department",flat=True)
         return Response(data=data)
-
-
-
-#class EmployeeModelViewSetView(viewsets.ViewSet):
-
-    
-    def list(self,request,*args,**kwargs):
-        qs=Employees.objects.all()
-        serializer=EmployeeSerializer(qs,many=True)
-        return Response(data=serializer.data)
-    
-    def retrieve(self,request,*args,**kwargs):
-        id=kwargs.get("pk")
-        qs=Employees.objects.get(id=id)
-        serializer=EmployeeSerializer(qs)
-        return Response(data=serializer.data)
-    
-    def create(self,request,*args,**kwargs):
-        serializer=EmployeeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data)
-        else:
-            return Response(serializer.errors)
-
-    def update(self,request,*args,**kwargs):
-        id=kwargs.get("pk")
-        employee_object=Employees.objects.get(id=id)
-        serializer=EmployeeSerializer(data=request.data,instance=employee_object)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data)
-        else:
-            return Response(serializer.errors)
-    def destroy(self,request,*args,**kwargs):
-        id=kwargs.get("pk")
-        Employees.objects.get(id=id).delete()
-        return Response(data={"message":"data deleted successfully"})
